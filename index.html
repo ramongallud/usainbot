@@ -1,320 +1,119 @@
 <!DOCTYPE html>
-<script type="application/json" id="cowork-artifact-meta">
-{
-  "name": "Pmc Ironman703",
-  "schemaVersion": 1,
-  "description": "PMC estático con datos horneados. CTL/ATL/TSB calculados desde Strava con escala por deporte. Se actualiza manualmente al final del día.",
-  "mcpTools": [],
-  "mcpServerNames": []
-}
-</script>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PMC · IronMan 70.3</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
-<style>
-:root { color-scheme: dark; }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; padding: 14px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usain Bot</title>
+  <style>
+    :root { color-scheme: dark; }
 
-.header { margin-bottom: 12px; }
-.header h1 { font-size: 16px; font-weight: 700; }
-.header .sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-.kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 10px; }
-.kpi { background: #1e2130; border-radius: 10px; padding: 12px 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.4); position: relative; overflow: hidden; }
-.kpi::before { content:''; position:absolute; top:0;left:0;right:0;height:3px; }
-.kpi.ctl::before { background:#60a5fa; }
-.kpi.atl::before { background:#fb923c; }
-.kpi.tsb::before { background:#94a3b8; }
-.kpi-lbl { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:#64748b; }
-.kpi-val { font-size:30px; font-weight:700; line-height:1.15; margin:3px 0 1px; }
-.kpi.ctl .kpi-val { color:#60a5fa; }
-.kpi.atl .kpi-val { color:#fb923c; }
-.kpi-sub { font-size:10px; color:#64748b; }
-.pos { color:#4ade80 !important; } .neg { color:#f87171 !important; } .neu { color:#94a3b8 !important; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d0d0d;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      padding: 32px;
+    }
 
-.races { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
-.race-chip { background:#1e2130; border-radius:8px; padding:7px 11px; box-shadow:0 1px 6px rgba(0,0,0,0.4); font-size:11px; flex:1; min-width:90px; border-left:3px solid #f87171; }
-.race-chip .rn { font-weight:600; color:#e2e8f0; }
-.race-chip .rd { color:#f87171; font-size:10px; font-weight:700; margin-top:2px; }
+    header {
+      text-align: center;
+    }
 
-.card { background:#1e2130; border-radius:10px; padding:14px; box-shadow:0 1px 6px rgba(0,0,0,0.4); margin-bottom:10px; }
-.card-title { font-size:12px; font-weight:600; color:#94a3b8; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
-.chart-wrap { position:relative; }
-.tall  { height:230px; }
-.short { height:95px; }
+    header .emoji {
+      font-size: 56px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
 
-.legend { display:flex; gap:14px; flex-wrap:wrap; margin-top:8px; }
-.legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:#64748b; }
-.legend-dot { width:12px; height:3px; border-radius:2px; }
+    header h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: #f0f0f0;
+    }
 
-.breakdown { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
-.sport-stat { text-align:center; padding:8px 4px; background:#151720; border-radius:8px; }
-.sport-stat .si { font-size:16px; }
-.sport-stat .sl { font-size:9px; color:#64748b; margin:2px 0; }
-.sport-stat .sv { font-size:13px; font-weight:700; color:#e2e8f0; }
+    header p {
+      margin-top: 8px;
+      font-size: 15px;
+      color: #555;
+      letter-spacing: 0.5px;
+    }
 
-.update-hint { background:#1a2035; border:1px solid #2d3a5c; border-radius:8px; padding:10px 12px; font-size:11px; color:#93b4ff; margin-bottom:10px; line-height:1.5; }
-.update-hint strong { font-weight:600; }
+    nav {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
 
-.glossary { background:#1e2130; border-radius:10px; padding:14px; box-shadow:0 1px 6px rgba(0,0,0,0.4); margin-bottom:10px; }
-.glossary-title { font-size:12px; font-weight:600; color:#94a3b8; margin-bottom:10px; }
-.glossary-item { display:flex; gap:10px; margin-bottom:10px; align-items:flex-start; }
-.glossary-item:last-child { margin-bottom:0; }
-.glossary-badge { flex-shrink:0; font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; margin-top:1px; }
-.badge-ctl { background:rgba(96,165,250,0.15); color:#60a5fa; }
-.badge-atl { background:rgba(251,146,60,0.15); color:#fb923c; }
-.badge-tsb { background:rgba(148,163,184,0.15); color:#94a3b8; }
-.glossary-text { font-size:11px; color:#94a3b8; line-height:1.6; }
-.glossary-text strong { color:#e2e8f0; font-weight:600; }
-.glossary-logic { margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06); font-size:11px; color:#64748b; line-height:1.6; }
-.glossary-logic em { color:#93b4ff; font-style:normal; }
-</style>
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      min-width: 180px;
+      justify-content: center;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-calendario {
+      background: #e0e0e0;
+      color: #0d0d0d;
+    }
+
+    .btn-estado {
+      background: #0f2e1a;
+      color: #5dba7c;
+      border: 2px solid #1f5e35;
+    }
+
+    .btn-estado:hover {
+      box-shadow: 0 8px 24px rgba(0,100,0,0.25);
+    }
+
+    footer {
+      font-size: 12px;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>🏊‍♂️🚴‍♂️🏃‍♂️ PMC · IronMan 70.3</h1>
-  <div class="sub" id="subDate"></div>
-</div>
+  <header>
+    <div class="emoji">🤖</div>
+    <h1>Usain Bot</h1>
+  </header>
 
-<div class="update-hint">
-  📅 <strong>Datos del 1 mar – 14 jun 2026</strong> · Escala: bici ×3 · carrera ×1.3 · natación ×2 · fuerza ×1<br>
-  Para actualizar dile a Claude: <em>"actualiza el PMC"</em>
-</div>
+  <nav>
+    <a class="btn btn-calendario" href="/ironman703-calendario/">
+      📅 Calendario
+    </a>
+    <a class="btn btn-estado" href="pmc-ironman703">
+      📈 Estado
+    </a>
+  </nav>
 
-<div class="races" id="racesStrip"></div>
 
-<div class="kpi-row">
-  <div class="kpi ctl"><div class="kpi-lbl">CTL · Forma</div><div class="kpi-val" id="ctlVal">65</div><div class="kpi-sub">Avg 42 días</div></div>
-  <div class="kpi atl"><div class="kpi-lbl">ATL · Fatiga</div><div class="kpi-val" id="atlVal">72.5</div><div class="kpi-sub">Avg 7 días</div></div>
-  <div class="kpi tsb"><div class="kpi-lbl">TSB · Balance</div><div class="kpi-val neg" id="tsbVal">-10</div><div class="kpi-sub" id="tsbZone">Fatigado 🔥</div></div>
-</div>
-
-<div class="glossary">
-  <div class="glossary-title">¿Qué estoy viendo?</div>
-  <div class="glossary-item">
-    <span class="glossary-badge badge-ctl">CTL</span>
-    <div class="glossary-text"><strong>Chronic Training Load · Forma</strong> — media ponderada de 42 días. Refleja tu condición física acumulada. Sube despacio y baja despacio.</div>
-  </div>
-  <div class="glossary-item">
-    <span class="glossary-badge badge-atl">ATL</span>
-    <div class="glossary-text"><strong>Acute Training Load · Fatiga</strong> — media ponderada de 7 días. Reacciona rápido a lo que entrenas esta semana.</div>
-  </div>
-  <div class="glossary-item">
-    <span class="glossary-badge badge-tsb">TSB</span>
-    <div class="glossary-text"><strong>Training Stress Balance · Balance</strong> — CTL − ATL del día anterior. Negativo = fatigado, positivo = fresco.</div>
-  </div>
-  <div class="glossary-logic">
-    Para rendir bien en carrera necesitas TSB positivo <em>(entre +5 y +25)</em>, pero para mejorar el CTL hay que entrenar en zona negativa. El taper de las últimas semanas antes del 70.3 es básicamente subir el TSB desde −10 hasta <em>+10/+15</em> sin perder demasiado CTL.
-  </div>
-</div>
-
-<div class="card">
-  <div class="card-title">
-    <span>Performance Management Chart</span>
-    <span style="font-size:10px;color:#94a3b8;font-weight:400">últimos 90 días</span>
-  </div>
-  <div class="chart-wrap tall"><canvas id="pmcChart"></canvas></div>
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>CTL (Forma)</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>ATL (Fatiga)</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div>TSB (Balance)</div>
-  </div>
-</div>
-
-<div class="card">
-  <div class="card-title">Carga diaria — últimos 30 días</div>
-  <div class="chart-wrap short"><canvas id="loadChart"></canvas></div>
-</div>
-
-<div class="card">
-  <div class="card-title">Desglose acumulado por deporte (últimos 30d)</div>
-  <div class="breakdown" id="brkGrid"></div>
-</div>
-
-<script>
-// ── Data (baked from Strava, updated 2026-06-14) ─────────────────────
-// Format: [date, load, ctl, atl, tsb]
-const RAW = [["2026-03-01",158,3.7,21.1,0],["2026-03-02",24,4.2,21.4,-17.3],["2026-03-03",62,5.5,26.8,-17.2],["2026-03-04",52,6.6,30.1,-21.2],["2026-03-05",61,7.9,34.3,-23.5],["2026-03-06",32,8.5,34,-26.3],["2026-03-07",66,9.8,38.2,-25.5],["2026-03-08",120,12.4,49.1,-28.4],["2026-03-09",54,13.4,49.7,-36.6],["2026-03-10",44,14.1,48.9,-36.3],["2026-03-11",27,14.4,46,-34.8],["2026-03-12",60,15.5,47.8,-31.6],["2026-03-13",23,15.7,44.6,-32.3],["2026-03-14",63,16.8,47,-28.9],["2026-03-15",121,19.2,56.9,-30.2],["2026-03-16",108,21.3,63.7,-37.6],["2026-03-17",64,22.3,63.7,-42.3],["2026-03-18",65,23.3,63.9,-41.4],["2026-03-19",49,23.9,62,-40.5],["2026-03-20",23,23.9,56.7,-38],["2026-03-21",45,24.4,55.2,-32.8],["2026-03-22",179,28.1,71.7,-30.7],["2026-03-23",55,28.7,69.5,-43.6],["2026-03-24",62,29.5,68.5,-40.8],["2026-03-25",68,30.4,68.4,-39],["2026-03-26",65,31.2,68,-38],["2026-03-27",59,31.9,66.8,-36.8],["2026-03-28",78,32.9,68.3,-34.9],["2026-03-29",68,33.8,68.2,-35.3],["2026-03-30",73,34.7,68.8,-34.4],["2026-03-31",0,33.9,59.7,-34.2],["2026-04-01",0,33.1,51.7,-25.8],["2026-04-02",25,32.9,48.1,-18.7],["2026-04-03",57,33.4,49.3,-15.3],["2026-04-04",77,34.4,52.9,-15.9],["2026-04-05",0,33.6,45.9,-18.5],["2026-04-06",87,34.9,51.4,-12.2],["2026-04-07",67,35.7,53.5,-16.5],["2026-04-08",126,37.8,63.1,-17.8],["2026-04-09",59,38.3,62.6,-25.4],["2026-04-10",134,40.5,72.1,-24.3],["2026-04-11",7,39.7,63.3,-31.5],["2026-04-12",174,42.9,78.1,-23.6],["2026-04-13",57,43.2,75.3,-35.2],["2026-04-14",60,43.6,73.3,-32.1],["2026-04-15",110,45.2,78.2,-29.7],["2026-04-16",55,45.4,75.1,-33],["2026-04-17",37,45.2,70,-29.7],["2026-04-18",99,46.5,73.9,-24.8],["2026-04-19",83,47.3,75.1,-27.4],["2026-04-20",86,48.3,76.6,-27.8],["2026-04-21",62,48.6,74.6,-28.3],["2026-04-22",134,50.6,82.5,-26],["2026-04-23",34,50.2,76,-31.9],["2026-04-24",105,51.5,79.8,-25.8],["2026-04-25",0,50.3,69.2,-28.4],["2026-04-26",152,52.7,80.2,-18.9],["2026-04-27",68,53,78.6,-27.6],["2026-04-28",65,53.3,76.9,-25.6],["2026-04-29",105,54.5,80.6,-23.5],["2026-04-30",54,54.5,77.1,-26.1],["2026-05-01",16,53.6,69,-22.5],["2026-05-02",148,55.8,79.5,-15.4],["2026-05-03",0,54.5,68.9,-23.7],["2026-05-04",94,55.5,72.3,-14.4],["2026-05-05",56,55.5,70.2,-16.8],["2026-05-06",156,57.8,81.6,-14.7],["2026-05-07",45,57.5,76.7,-23.7],["2026-05-08",59,57.6,74.3,-19.2],["2026-05-09",46,57.3,70.5,-16.8],["2026-05-10",210,60.9,89.1,-13.2],["2026-05-11",0,59.4,77.2,-28.2],["2026-05-12",68,59.6,76,-17.8],["2026-05-13",78,60.1,76.2,-16.3],["2026-05-14",42,59.7,71.7,-16.2],["2026-05-15",17,58.6,64.4,-12],["2026-05-16",72,59,65.4,-5.8],["2026-05-17",179,61.8,80.5,-6.5],["2026-05-18",8,60.5,70.9,-18.7],["2026-05-19",56,60.4,68.9,-10.4],["2026-05-20",79,60.8,70.2,-8.5],["2026-05-21",58,60.8,68.5,-9.4],["2026-05-22",41,60.3,64.8,-7.8],["2026-05-23",50,60,62.8,-4.5],["2026-05-24",99,61,67.6,-2.8],["2026-05-25",91,61.7,70.8,-6.7],["2026-05-26",55,61.5,68.7,-9.1],["2026-05-27",6,60.2,60.3,-7.1],["2026-05-28",44,59.8,58.2,-0.1],["2026-05-29",13,58.7,52.1,1.7],["2026-05-30",0,57.3,45.2,6.6],["2026-05-31",390,65.2,91.1,12.1],["2026-06-01",24,64.2,82.2,-25.9],["2026-06-02",62,64.2,79.5,-18],["2026-06-03",8,62.8,70,-15.4],["2026-06-04",57,62.7,68.2,-7.2],["2026-06-05",79,63.1,69.7,-5.5],["2026-06-06",66,63.1,69.2,-6.6],["2026-06-07",69,63.3,69.1,-6],["2026-06-08",90,63.9,71.9,-5.9],["2026-06-09",56,63.7,69.8,-8],["2026-06-10",70,63.9,69.9,-6.1],["2026-06-11",53,63.6,67.7,-6],["2026-06-12",93,64.3,71.1,-4],["2026-06-13",105,65.3,75.6,-6.8],["2026-06-14",52,65,72.5,-10.3]];
-
-const ALL = RAW.map(r => ({date:r[0], load:r[1], ctl:r[2], atl:r[3], tsb:r[4]}));
-
-// ── Config ───────────────────────────────────────────────────────────
-const RACES = [
-  {date:'2026-06-28', label:'Valencia Olímpico', short:'Valencia'},
-  {date:'2026-07-05', label:'Tabarca 6km OWS',   short:'Tabarca'},
-  {date:'2026-10-17', label:'IronMan 70.3 🎯',   short:'70.3'},
-];
-
-const EVENTS = [
-  {date:'2026-03-01', label:'Duatlón'},
-  {date:'2026-03-22', label:'HM Elche'},
-  {date:'2026-04-12', label:'HM Almería'},
-  {date:'2026-04-26', label:'HM Madrid'},
-  {date:'2026-05-02', label:'Tri Fuente Álamo'},
-  {date:'2026-05-17', label:'MTRI Alicante'},
-  {date:'2026-05-31', label:'Aitana Tour'},
-];
-
-const TSB_ZONES = [
-  {min:25,label:'Muy fresco ⚡',cls:'pos'},
-  {min:10,label:'Fresco ✅',cls:'pos'},
-  {min:-10,label:'Neutro ⚖️',cls:'neu'},
-  {min:-25,label:'Fatigado 🔥',cls:'neg'},
-  {min:-Infinity,label:'Muy fatigado ❌',cls:'neg'},
-];
-function getZone(v) { return TSB_ZONES.find(z=>v>=z.min)||TSB_ZONES[TSB_ZONES.length-1]; }
-
-function fmt(s) { return new Date(s+'T00:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'}); }
-function diffD(s) {
-  const d=new Date(s+'T00:00:00'), n=new Date(); n.setHours(0,0,0,0);
-  return Math.ceil((d-n)/86400000);
-}
-
-// ── Header ───────────────────────────────────────────────────────────
-document.getElementById('subDate').textContent =
-  'Actualizado 14 jun 2026 · RE ajustado por deporte';
-
-// ── Races strip ───────────────────────────────────────────────────────
-const strip = document.getElementById('racesStrip');
-RACES.forEach(r => {
-  const d = diffD(r.date);
-  if (d < -30) return;
-  const el = document.createElement('div');
-  el.className = 'race-chip';
-  el.innerHTML = '<div class="rn">'+r.label+'</div><div class="rd">'+(d>0?d+' días':d===0?'HOY 🎉':'Completada')+'</div>';
-  strip.appendChild(el);
-});
-
-// ── Last 90 days display ──────────────────────────────────────────────
-const D90 = ALL.slice(-90);
-const labels = D90.map(d=>fmt(d.date));
-
-// Event markers inside window
-const evtMarkers = EVENTS.map(e=>{
-  const i=D90.findIndex(d=>d.date===e.date);
-  return i>=0?{i,label:e.label}:null;
-}).filter(Boolean);
-
-const raceMarkers = RACES.map(r=>{
-  const i=D90.findIndex(d=>d.date===r.date);
-  return i>=0?{i,short:r.short}:null;
-}).filter(Boolean);
-
-// ── PMC Chart ─────────────────────────────────────────────────────────
-const drawLinesPlugin = {
-  id:'drawLines',
-  afterDraw(chart) {
-    const {ctx,chartArea:ca,scales} = chart;
-    // event markers (grey dashed)
-    evtMarkers.forEach(({i,label}) => {
-      const x = scales.x.getPixelForValue(i);
-      if(x<ca.left||x>ca.right) return;
-      ctx.save();
-      ctx.beginPath(); ctx.strokeStyle='rgba(148,163,184,0.45)'; ctx.lineWidth=1;
-      ctx.setLineDash([3,3]); ctx.moveTo(x,ca.top); ctx.lineTo(x,ca.bottom); ctx.stroke();
-      ctx.setLineDash([]); ctx.font='8px sans-serif'; ctx.fillStyle='#94a3b8';
-      ctx.fillText(label,x+2,ca.bottom-4);
-      ctx.restore();
-    });
-    // race markers (red)
-    raceMarkers.forEach(({i,short}) => {
-      const x = scales.x.getPixelForValue(i);
-      if(x<ca.left||x>ca.right) return;
-      ctx.save();
-      ctx.beginPath(); ctx.strokeStyle='rgba(239,68,68,0.6)'; ctx.lineWidth=1.5;
-      ctx.setLineDash([5,4]); ctx.moveTo(x,ca.top); ctx.lineTo(x,ca.bottom); ctx.stroke();
-      ctx.setLineDash([]); ctx.font='bold 9px sans-serif'; ctx.fillStyle='#ef4444';
-      ctx.fillText(short,x+3,ca.top+12);
-      ctx.restore();
-    });
-    // zero line
-    const y0=scales.y.getPixelForValue(0);
-    if(y0>=ca.top&&y0<=ca.bottom){
-      ctx.save(); ctx.beginPath(); ctx.strokeStyle='rgba(107,114,128,0.2)'; ctx.lineWidth=1;
-      ctx.moveTo(ca.left,y0); ctx.lineTo(ca.right,y0); ctx.stroke(); ctx.restore();
-    }
-    // today marker
-    const tx=scales.x.getPixelForValue(D90.length-1);
-    ctx.save();
-    ctx.beginPath(); ctx.strokeStyle='rgba(100,116,139,0.3)'; ctx.lineWidth=1;
-    ctx.moveTo(tx,ca.top); ctx.lineTo(tx,ca.bottom); ctx.stroke();
-    ctx.font='9px sans-serif'; ctx.fillStyle='#94a3b8';
-    ctx.fillText('hoy',tx+2,ca.top+22);
-    ctx.restore();
-  }
-};
-
-new Chart(document.getElementById('pmcChart'), {
-  data:{ labels, datasets:[
-    {type:'line',label:'CTL',data:D90.map(d=>d.ctl),borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,0.08)',fill:true,tension:.35,pointRadius:0,borderWidth:2.5},
-    {type:'line',label:'ATL',data:D90.map(d=>d.atl),borderColor:'#fb923c',fill:false,tension:.35,pointRadius:0,borderWidth:2},
-    {type:'line',label:'TSB',data:D90.map(d=>d.tsb),borderColor:'#94a3b8',borderDash:[5,3],backgroundColor:'rgba(148,163,184,0.06)',fill:'origin',tension:.35,pointRadius:0,borderWidth:1.5},
-  ]},
-  options:{
-    responsive:true,maintainAspectRatio:false,
-    interaction:{intersect:false,mode:'index'},
-    plugins:{
-      legend:{display:false},
-      tooltip:{
-        backgroundColor:'rgba(15,17,23,0.95)',titleColor:'#64748b',bodyColor:'#e2e8f0',padding:10,
-        callbacks:{
-          title:i=>D90[i[0].dataIndex]?.date||'',
-          label:c=>' '+c.dataset.label+': '+c.parsed.y,
-        }
-      }
-    },
-    scales:{
-      x:{ticks:{maxTicksLimit:10,font:{size:9},color:'#64748b'},grid:{display:false}},
-      y:{ticks:{font:{size:9},color:'#64748b',maxTicksLimit:6},grid:{color:'rgba(255,255,255,0.05)'}},
-    }
-  },
-  plugins:[drawLinesPlugin]
-});
-
-// ── Load bar chart ────────────────────────────────────────────────────
-const D30 = ALL.slice(-30);
-new Chart(document.getElementById('loadChart'), {
-  type:'bar',
-  data:{
-    labels:D30.map(d=>fmt(d.date)),
-    datasets:[{
-      data:D30.map(d=>d.load),
-      backgroundColor:D30.map(d=>d.load>200?'rgba(239,68,68,0.75)':d.load>100?'rgba(249,115,22,0.65)':d.load>40?'rgba(59,130,246,0.55)':'rgba(148,163,184,0.4)'),
-      borderWidth:0,borderRadius:3
-    }]
-  },
-  options:{
-    responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(15,17,23,0.95)',bodyColor:'#e2e8f0',callbacks:{label:c=>' Carga: '+c.parsed.y}}},
-    scales:{
-      x:{ticks:{maxTicksLimit:8,font:{size:9},color:'#64748b'},grid:{display:false}},
-      y:{ticks:{font:{size:9},color:'#64748b',maxTicksLimit:4},grid:{color:'rgba(255,255,255,0.05)'}}
-    }
-  }
-});
-
-// ── Sport breakdown (last 30d) ────────────────────────────────────────
-// Recompute from raw activities embedded in ALL data (approximate from load)
-// We'll show the breakdown based on known daily totals
-const SPORT_DEFS = [
-  {key:'bici',icon:'🚴‍♂️',label:'Bici'},
-  {key:'run', icon:'🏃‍♂️',label:'Carrera'},
-  {key:'swim',icon:'🏊‍♂️',label:'Natación'},
-  {key:'gym', icon:'🏋️', label:'Fuerza'},
-];
-// From the 30d data, sport breakdown was pre-computed (approximate)
-const SPORT30 = {bici:651,run:545,swim:296,gym:147};
-const grid=document.getElementById('brkGrid');
-SPORT_DEFS.forEach(d=>{
-  const el=document.createElement('div'); el.className='sport-stat';
-  el.innerHTML='<div class="si">'+d.icon+'</div><div class="sl">'+d.label+'</div><div class="sv">'+SPORT30[d.key]+'</div>';
-  grid.appendChild(el);
-});
-</script>
 </body>
 </html>
